@@ -42,7 +42,7 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 	return template.ParseFiles(paths...)
 }
 
-func SendEmail(user *models.User, data *EmailData) {
+func SendEmail(user *models.User, data *EmailData, emailTemp string) {
 	config, err := initializers.LoadConfig(".")
 
 	if err != nil {
@@ -59,12 +59,15 @@ func SendEmail(user *models.User, data *EmailData) {
 
 	var body bytes.Buffer
 
-	template, err := ParseTemplateDir("templates")
+	tmpl, err := ParseTemplateDir("templates")
 	if err != nil {
 		log.Fatal("Could not parse template", err)
 	}
 
-	template.ExecuteTemplate(&body, "verificationCode.html", &data)
+	err = tmpl.ExecuteTemplate(&body, emailTemp, &data)
+	if err != nil {
+		log.Fatal("Could not execute template verificationCode", err)
+	}
 
 	m := gomail.NewMessage()
 
